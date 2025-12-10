@@ -1,6 +1,6 @@
 {
   "name": "com.henrylin.editorkit",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "displayName": "EditorKit",
   "description": "An Unity Editor Kit.\n\nYou can use the built-in tools, or add and register your own custom tools to the editor kit.\n\nThe built-in tools are:\n1. TimeScale Quick Switch\n2. FPS Quick Switch\n3. SpritePacker Quick Switch\n4. CodeEditor Management Tool\n5. GameView Screenshot Tool\n",
   "unity": "2022.3",
