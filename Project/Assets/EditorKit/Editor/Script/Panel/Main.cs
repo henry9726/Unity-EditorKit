@@ -47,7 +47,6 @@ namespace Henry.EditorKit
         static void OpenWindow()
         {
             var window = GetWindow<Main>(false, MenuPath.EditorKitDisplayName);
-            window.LoadLocalRecord();
         }
 
         [MenuItem(MenuHidePanelBar)]
@@ -65,6 +64,7 @@ namespace Henry.EditorKit
         void IHasCustomMenu.AddItemsToMenu(GenericMenu menu)
         {
             panelDataArr[activePanelIdx].Panel.AddItemsToMenu(menu);
+            menu.AddItem(new GUIContent("Hide panel bar"), IsHidePanelBar, HidePanelBar);
         }
 
         void Initialize()
@@ -130,8 +130,12 @@ namespace Henry.EditorKit
                 item.Panel.OnDisable();
             }
 
-            compRecordStore.SetRecords(compStore.Components.Select(el => el.Record));
-            compRecordStore.SaveRecord();
+            if (compRecordStore != null)
+            {
+                compRecordStore.SetRecords(compStore.Components.Select(el => el.Record));
+                compRecordStore.SaveRecord();
+                DestroyImmediate(compRecordStore);
+            }
         }
 
         void RepaintOnUpdate()
@@ -155,11 +159,6 @@ namespace Henry.EditorKit
                 }
                 panelDataArr[activePanelIdx].Panel.OnGUI(position);
             }
-        }
-
-        void LoadLocalRecord()
-        {
-
         }
 
         void PinPresetComps()

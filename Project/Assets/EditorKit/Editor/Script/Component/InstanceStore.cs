@@ -116,6 +116,8 @@ namespace Henry.EditorKit
             }
 
             var instance = ScriptableObject.CreateInstance(type);
+            instance.hideFlags = HideFlags.DontSaveInEditor;
+            
             return instance;
         }
     }

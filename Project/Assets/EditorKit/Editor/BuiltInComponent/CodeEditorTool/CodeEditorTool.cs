@@ -26,7 +26,7 @@ namespace Henry.EditorKit.BuiltInComponent
         public static Config Info => new("CodeEditor Tool")
         {
             Author = "林祐豪",
-            Version = "1.0.0"
+            Version = "1.0.1"
         };
 
         void IComponent.OnEnable()
@@ -34,8 +34,8 @@ namespace Henry.EditorKit.BuiltInComponent
             codeEditor = CodeEditor.Editor;
 
             var editorOptionsNameDict = codeEditor.GetFoundScriptEditorPaths();
-            editorOptionsPath ??= editorOptionsNameDict.Keys.ToArray();
-            editorOptionsName ??= editorOptionsNameDict.Values.ToArray();
+            editorOptionsPath = editorOptionsNameDict.Keys.ToArray();
+            editorOptionsName = editorOptionsNameDict.Values.ToArray();
 
             FetchCurrentEditor();
         }

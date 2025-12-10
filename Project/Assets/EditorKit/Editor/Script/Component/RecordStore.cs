@@ -23,9 +23,10 @@ namespace Henry.EditorKit
 
             if (result == null)
             {
-                result = ScriptableObject.CreateInstance<RecordStore>();
+                result = CreateInstance<RecordStore>();
             }
 
+            result.hideFlags = HideFlags.DontSaveInEditor;
             return result;
         }
 

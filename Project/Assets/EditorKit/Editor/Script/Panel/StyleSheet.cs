@@ -25,8 +25,10 @@ namespace Henry.EditorKit
         {
             if (IsSetup) return;
 
+            ColorUtility.TryParseHtmlString("#a5bfde", out Color h1TextColor);
             H1 = new(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Bold, alignment = TextAnchor.UpperLeft };
-            H1.normal.textColor = new Color(0.65f, 0.75f, 0.87f, 1);
+            H1.normal.textColor = h1TextColor;
+
             Title_H1 = new[] { GUILayout.Height(20) };
             FieldLabel_md = new[] { GUILayout.Width(100) };
             Block = new(EditorStyles.helpBox) { padding = new RectOffset(5, 5, 5, 5) };

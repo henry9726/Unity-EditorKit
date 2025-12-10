@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -19,6 +20,7 @@ namespace Henry.EditorKit
 
         // Data fields
         [NonSerialized] List<Data> comps;
+        [NonSerialized] List<bool> compsExpanded;
         Vector2 scrollPosition = Vector2.zero;
 
         Action requestLoadPresetComps;
@@ -35,6 +37,7 @@ namespace Henry.EditorKit
         public void SetPinnedComps(List<Data> comps)
         {
             this.comps = comps;
+            compsExpanded = Enumerable.Repeat(true, comps.Count).ToList();
         }
 
         void ISubPanel.AddItemsToMenu(GenericMenu menu)
@@ -114,14 +117,67 @@ namespace Henry.EditorKit
         {
             var compsCache = comps;
 
-            foreach (var el in compsCache)
+            for (int i = 0; i < compsCache.Count; i++)
             {
+                var el = compsCache[i];
                 var elPerferSize = el.Component.GetPreferMinSize();
                 var minHeightOption = elPerferSize.y > 0 ? GUILayout.MinHeight(elPerferSize.y) : emptyMinHeight;
                 using (new EditorGUILayout.VerticalScope(style.Block, minHeightOption))
                 {
-                    DrawCompHeader(el);
-                    el.Component.OnGUI(rect);
+                    var isExpanded = compsExpanded[i];
+
+                    DrawCustomFoldoutHeader(el, ref isExpanded);
+
+                    if (isExpanded)
+                    {
+                        try
+                        {
+                            el.Component.OnGUI(rect);
+                        }
+                        catch (System.Exception e)
+                        {
+                            Debug.LogError($"Component {el.Info.Config.Name} failed to draw: {e.Message}");
+                            isExpanded = false;
+                        }
+                    }
+
+                    compsExpanded[i] = isExpanded;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 繪製自訂的摺疊標題
+        /// </summary>
+        /// <param name="title">標題文字</param>
+        /// <param name="isExpanded">控制摺疊狀態的 ref 變數</param>
+        private void DrawCustomFoldoutHeader(Data data, ref bool isExpanded)
+        {
+            ColorUtility.TryParseHtmlString("#989898", out Color h1DisableTextColor);
+
+            GUIStyle headerStyle = new GUIStyle(style.H1);
+            headerStyle.alignment = TextAnchor.MiddleLeft;
+            headerStyle.normal.textColor = isExpanded ? style.H1.normal.textColor : h1DisableTextColor;
+
+            var hoverStyle = new GUIStyleState();
+            hoverStyle.textColor = isExpanded ? style.H1.normal.textColor : h1DisableTextColor;
+
+            headerStyle.hover = hoverStyle;
+            headerStyle.active = hoverStyle;
+
+            string arrow = isExpanded ? "▾" : "▸";
+            string displayText = $"{arrow} {data.Info.Config.Name}";
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button(displayText, headerStyle, GUILayout.ExpandWidth(true)))
+                {
+                    isExpanded = !isExpanded;
+                }
+
+                if (GUILayout.Button(cornerBtnGuiContent, dotMenuBtnStyle))
+                {
+                    ShowContextMenu(data);
                 }
             }
         }
