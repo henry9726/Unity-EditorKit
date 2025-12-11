@@ -11,6 +11,8 @@ namespace Henry.EditorKit
     [Serializable]
     class SearchPanel : ISubPanel
     {
+        readonly string searchBarHeaderText = "Search : ";
+
         IReadOnlyList<Info> componentInfoList;
         ISearcher searcher;
         StyleSheet style;
@@ -24,6 +26,8 @@ namespace Henry.EditorKit
         GUIContent infoIconContent;
         GUIContent openIconContent;
         GUIContent keepIconContent;
+        GUIStyle labelStyle;
+        GUILayoutOption searchBarHeaderWidth;
 
         [SerializeField] string searchingString = "";
         IEnumerable<Info> searchResult = Array.Empty<Info>();
@@ -57,6 +61,7 @@ namespace Henry.EditorKit
 
         void ISubPanel.OnGUI(Rect rect)
         {
+            ValidateStyles();
             DrawSearchBar();
 
             using (var view = new EditorGUILayout.ScrollViewScope(scrollPosition, false, false))
@@ -69,23 +74,39 @@ namespace Henry.EditorKit
             }
         }
 
+        void ValidateStyles()
+        {
+            if (labelStyle == null)
+            {
+                labelStyle = new GUIStyle(EditorStyles.label);
+            }
+            if (searchBarHeaderWidth == null)
+            {
+                searchBarHeaderWidth = GUILayout.MaxWidth(labelStyle.CalcSize(new GUIContent(searchBarHeaderText)).x);
+            }
+        }
+
         void DrawSearchBar()
         {
-            EditorGUI.BeginChangeCheck();
-            searchingString = EditorGUILayout.TextField(string.Empty, searchingString);
-            if (EditorGUI.EndChangeCheck())
+            using (new EditorGUILayout.HorizontalScope())
             {
-                var tempSearchString = searchingString;
-                if (string.IsNullOrEmpty(tempSearchString))
+                EditorGUILayout.LabelField(searchBarHeaderText, searchBarHeaderWidth);
+                EditorGUI.BeginChangeCheck();
+                searchingString = EditorGUILayout.TextField(string.Empty, searchingString);
+                if (EditorGUI.EndChangeCheck())
                 {
-                    searchResult = componentInfoList;
-                }
-                else
-                {
-                    searcher.Search(tempSearchString, result =>
+                    var tempSearchString = searchingString;
+                    if (string.IsNullOrEmpty(tempSearchString))
                     {
-                        searchResult = result.Select(el => componentInfoList.First(item => item.TypeFullName == el)).ToList();
-                    });
+                        searchResult = componentInfoList;
+                    }
+                    else
+                    {
+                        searcher.Search(tempSearchString, result =>
+                        {
+                            searchResult = result.Select(el => componentInfoList.First(item => item.TypeFullName == el)).ToList();
+                        });
+                    }
                 }
             }
         }
