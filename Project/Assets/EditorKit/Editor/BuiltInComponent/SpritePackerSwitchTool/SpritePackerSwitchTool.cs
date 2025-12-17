@@ -7,7 +7,7 @@ namespace Henry.EditorKit.BuiltInComponent
 
     class SpritePackerSwitchTool : ScriptableObject, IComponent
     {
-        readonly string[] optionsTitle = new string[] { "Disable", "V1", "V2", "Other" };
+        readonly string[] optionsTitle = new string[] { "Disable", "V1", "V2", "V1Build", "V2Build" };
 
         int usingStateIndex;
 
@@ -28,18 +28,20 @@ namespace Henry.EditorKit.BuiltInComponent
         {
             using (new EditorGUILayout.HorizontalScope())
             {
-                var tempSelectedStateIndex = DrawToolbar();
+                var tempActiveIndex = DrawToolbar();
 
-                if (tempSelectedStateIndex != 3 && tempSelectedStateIndex != usingStateIndex)
+                if (tempActiveIndex != usingStateIndex)
                 {
-                    if (ShowConfirmDialog(optionsTitle[tempSelectedStateIndex]))
+                    if (ShowConfirmDialog(optionsTitle[tempActiveIndex]))
                     {
-                        usingStateIndex = tempSelectedStateIndex;
+                        usingStateIndex = tempActiveIndex;
                         switch (usingStateIndex)
                         {
                             case 0: SetPackerMode(SpritePackerMode.Disabled); break;
                             case 1: SetPackerMode(SpritePackerMode.AlwaysOnAtlas); break;
                             case 2: SetPackerMode(SpritePackerMode.SpriteAtlasV2); break;
+                            case 3: SetPackerMode(SpritePackerMode.BuildTimeOnlyAtlas); break;
+                            case 4: SetPackerMode(SpritePackerMode.SpriteAtlasV2Build); break;
                         }
                     }
                 }
@@ -50,16 +52,26 @@ namespace Henry.EditorKit.BuiltInComponent
 
         int DrawToolbar()
         {
-            var isDisabled = DrawToggle(optionsTitle[0], usingStateIndex == 0, "ButtonLeft", true);
-            var isAlwaysOnAtlas = DrawToggle(optionsTitle[1], usingStateIndex == 1, "ButtonMid", true);
-            var isSpriteAtlasV2 = DrawToggle(optionsTitle[2], usingStateIndex == 2, "ButtonMid", true);
-            DrawToggle(optionsTitle[3], usingStateIndex == 3, "ButtonRight", false);
+            var rect = EditorGUILayout.GetControlRect();
+            var count = optionsTitle.Length;
+            var width = rect.width / count;
+            var newIndex = usingStateIndex;
 
-            return
-            isDisabled ? 0
-            : isAlwaysOnAtlas ? 1
-            : isSpriteAtlasV2 ? 2
-            : 3;
+            for (int i = 0; i < count; i++)
+            {
+                var style = i == 0 ? "ButtonLeft" : i == count - 1 ? "ButtonRight" : "ButtonMid";
+                var buttonRect = new Rect(rect.x + i * width, rect.y, width, rect.height);
+
+                if (GUI.Toggle(buttonRect, usingStateIndex == i, optionsTitle[i], style))
+                {
+                    if (usingStateIndex != i)
+                    {
+                        newIndex = i;
+                    }
+                }
+            }
+
+            return newIndex;
         }
 
         static void SetPackerMode(SpritePackerMode mode)
@@ -73,7 +85,9 @@ namespace Henry.EditorKit.BuiltInComponent
             SpritePackerMode.Disabled => 0,
             SpritePackerMode.AlwaysOnAtlas => 1,
             SpritePackerMode.SpriteAtlasV2 => 2,
-            _ => 3
+            SpritePackerMode.BuildTimeOnlyAtlas => 3,
+            SpritePackerMode.SpriteAtlasV2Build => 4,
+            _ => 0
         };
 
         static bool ShowConfirmDialog(string modeName)
@@ -84,24 +98,6 @@ namespace Henry.EditorKit.BuiltInComponent
                 "Confirm",
                 "Cancel"
             );
-        }
-
-        static bool DrawToggle(string text, bool isActive, string style, bool isEnable)
-        {
-            var result = false;
-            var tempGuiEnabled = GUI.enabled;
-
-            GUI.enabled = isEnable;
-            if (GUILayout.Toggle(isActive, text, style) != isActive)
-            {
-                result = true;
-            }
-            else
-            {
-                result = false;
-            }
-            GUI.enabled = tempGuiEnabled;
-            return result;
         }
     }
 }

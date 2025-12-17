@@ -7,10 +7,16 @@ namespace Henry.EditorKit
     {
         public string compTypeFullName;
         public string compContent;
+        public bool isExpanded;
 
         public Record(string compTypeFullName)
         {
             this.compTypeFullName = compTypeFullName;
+        }
+
+        public void SetExpanded(bool expanded)
+        {
+            isExpanded = expanded;
         }
     }
 }

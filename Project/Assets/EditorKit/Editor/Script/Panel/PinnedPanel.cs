@@ -19,8 +19,7 @@ namespace Henry.EditorKit
         GUILayoutOption emptyMinHeight;
 
         // Data fields
-        [NonSerialized] List<Data> comps;
-        [NonSerialized] List<bool> compsExpanded;
+        [SerializeField] List<Data> comps;
         Vector2 scrollPosition = Vector2.zero;
 
         Action requestLoadPresetComps;
@@ -37,7 +36,6 @@ namespace Henry.EditorKit
         public void SetPinnedComps(List<Data> comps)
         {
             this.comps = comps;
-            compsExpanded = Enumerable.Repeat(true, comps.Count).ToList();
         }
 
         void ISubPanel.AddItemsToMenu(GenericMenu menu)
@@ -117,6 +115,9 @@ namespace Henry.EditorKit
         {
             var compsCache = comps;
 
+            // 扣除元件容器的 Padding
+            rect.width -= 8;
+
             for (int i = 0; i < compsCache.Count; i++)
             {
                 var el = compsCache[i];
@@ -124,11 +125,11 @@ namespace Henry.EditorKit
                 var minHeightOption = elPerferSize.y > 0 ? GUILayout.MinHeight(elPerferSize.y) : emptyMinHeight;
                 using (new EditorGUILayout.VerticalScope(style.Block, minHeightOption))
                 {
-                    var isExpanded = compsExpanded[i];
+                    var isExpanded = comps[i].Record.isExpanded;
 
                     DrawCustomFoldoutHeader(el, ref isExpanded);
 
-                    if (isExpanded)
+                    if (isExpanded is false)
                     {
                         try
                         {
@@ -141,7 +142,7 @@ namespace Henry.EditorKit
                         }
                     }
 
-                    compsExpanded[i] = isExpanded;
+                    comps[i].Record.SetExpanded(isExpanded);
                 }
             }
         }
@@ -157,16 +158,16 @@ namespace Henry.EditorKit
 
             GUIStyle headerStyle = new GUIStyle(style.H1);
             headerStyle.alignment = TextAnchor.MiddleLeft;
-            headerStyle.normal.textColor = isExpanded ? style.H1.normal.textColor : h1DisableTextColor;
+            headerStyle.normal.textColor = isExpanded ? h1DisableTextColor : style.H1.normal.textColor;
 
             var hoverStyle = new GUIStyleState();
-            hoverStyle.textColor = isExpanded ? style.H1.normal.textColor : h1DisableTextColor;
+            hoverStyle.textColor = isExpanded ? h1DisableTextColor : style.H1.normal.textColor;
 
             headerStyle.hover = hoverStyle;
             headerStyle.active = hoverStyle;
 
-            string arrow = isExpanded ? "▾" : "▸";
-            string displayText = $"{arrow} {data.Info.Config.Name}";
+            string arrowDirectionSymbol = isExpanded ? "▸" : "▾";
+            string displayText = $"{arrowDirectionSymbol} {data.Info.Config.Name}";
 
             using (new EditorGUILayout.HorizontalScope())
             {
