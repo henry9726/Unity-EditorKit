@@ -33,9 +33,10 @@ namespace Henry.EditorKit
         [SerializeField] InstanceStore compStore;
 
         bool isInitialized = false;
+        int activePanelIdx = 0;
         PanelData[] panelDataArr;
         string[] panelNameCacheArr;
-        int activePanelIdx = 0;
+        double lastTime;
 
         static bool IsHidePanelBar
         {
@@ -83,37 +84,34 @@ namespace Henry.EditorKit
 
         void OnEnable()
         {
-            EditorApplication.update += RepaintOnUpdate;
-
             if (isInitialized is false)
             {
                 Initialize();
                 isInitialized = true;
             }
 
-            {
-                // 初始化不能序列化的欄位
-                panelDataArr = new PanelData[] {
+            EditorApplication.update += RepaintOnUpdate;
+
+            // 初始化不能序列化的欄位
+            panelDataArr = new PanelData[] {
                     new("Pinned", pinnedPanel),
                     new("Browse", searchPanel)
                 };
-                panelNameCacheArr = panelDataArr.Select(el => el.Name).ToArray();
+            panelNameCacheArr = panelDataArr.Select(el => el.Name).ToArray();
 
-                // 更新個[元件資料]的Info資訊
-                foreach (var item in compStore.Components)
-                {
-                    item.SetInfo(ComponentRegistry.InfoDict[item.Record.compTypeFullName]);
-                }
-
-                pinnedPanel.Setup(PinPresetComps);
-
-                // 擷取[崁入式]的元件給[PinnedPanel]
-                FilterPinnedComponentForPinnedPanel();
-
-                // 
-                RegisterPinnedPanelEvents();
-                RegisterSearchPanelEvents();
+            // 更新個[元件資料]的Info資訊
+            foreach (var item in compStore.Components)
+            {
+                item.SetInfo(ComponentRegistry.InfoDict[item.Record.compTypeFullName]);
             }
+
+            pinnedPanel.Setup(PinPresetComps);
+
+            // 擷取[崁入式]的元件給[PinnedPanel]
+            FilterPinnedComponentForPinnedPanel();
+
+            RegisterPinnedPanelEvents();
+            RegisterSearchPanelEvents();
 
             foreach (var item in panelDataArr)
             {
@@ -124,7 +122,6 @@ namespace Henry.EditorKit
         void OnDisable()
         {
             EditorApplication.update -= RepaintOnUpdate;
-
             foreach (var item in panelDataArr)
             {
                 item.Panel.OnDisable();
@@ -138,9 +135,14 @@ namespace Henry.EditorKit
             }
         }
 
+
         void RepaintOnUpdate()
         {
-            this.Repaint();
+            if (EditorApplication.timeSinceStartup - lastTime > 0.1f)
+            {
+                lastTime = EditorApplication.timeSinceStartup;
+                Repaint();
+            }
         }
 
         void OnGUI()
