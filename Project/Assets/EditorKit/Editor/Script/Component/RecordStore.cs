@@ -5,9 +5,9 @@ namespace Henry.EditorKit
 {
     public class RecordStore : ScriptableObject
     {
-        const string RecordStoreVersion = "1.0.0";
+        const string RecordSystemVersion = RootConfig.RecordSystemVersion;
 
-        [SerializeField] string recordStoreVersion = RecordStoreVersion;
+        [SerializeField] string recordStoreVersion = RecordSystemVersion;
         [SerializeField] List<Record> records = new();
 
         public IReadOnlyList<Record> Records => records;
@@ -28,9 +28,9 @@ namespace Henry.EditorKit
             {
                 result = CreateInstance<RecordStore>();
             }
-            else if (result.recordStoreVersion != RecordStoreVersion)
+            else if (result.recordStoreVersion != RecordSystemVersion)
             {
-                LogPrinter.PrintWarning($"The record store version is not match, expected {RecordStoreVersion}, actual {result.recordStoreVersion}, will create a new record store");
+                LogPrinter.PrintWarning($"The record store version is not match, expected {RecordSystemVersion}, actual {result.recordStoreVersion}, will create a new record store");
                 result = CreateInstance<RecordStore>();
             }
 

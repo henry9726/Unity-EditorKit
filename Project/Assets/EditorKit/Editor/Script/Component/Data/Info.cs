@@ -1,12 +1,15 @@
 using System;
+using UnityEngine;
 
 namespace Henry.EditorKit.Component
 {
     [Serializable]
+
     public class Info
     {
-        Config config;
-        string typeFullName;
+        [SerializeField] Config config;
+        [SerializeField] string typeFullName;
+
         Type componentType;
 
         public Config Config => config;
@@ -25,11 +28,19 @@ namespace Henry.EditorKit.Component
             }
         }
 
-        public Info(Type type, Config config)
+        public Info(ComponentManifest manifest)
         {
-            componentType = type;
-            this.config = config;
-            typeFullName = type.FullName;
+            config = manifest.Config;
+
+            if (manifest.Script != null)
+            {
+                var type = manifest.Script.GetClass();
+                if (type != null)
+                {
+                    componentType = type;
+                    typeFullName = type.FullName;
+                }
+            }
         }
     }
 }

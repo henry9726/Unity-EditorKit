@@ -3,19 +3,11 @@ using UnityEngine;
 
 namespace Henry.EditorKit.BuiltInComponent
 {
-    using Henry.EditorKit.Component;
-
-    class SpritePackerSwitchTool : ScriptableObject, IComponent
+    class SpritePackerSwitcher : ScriptableObject, IComponent
     {
         readonly string[] optionsTitle = new string[] { "Disable", "V1", "V2", "V1Build", "V2Build" };
 
         int usingStateIndex;
-
-        public static Config Info => new("SpritePacker Switcher")
-        {
-            Author = "林祐豪、李育杰",
-            Version = "1.0.1"
-        };
 
         void IComponent.OnEnable()
         {

@@ -12,6 +12,7 @@ namespace Henry.EditorKit
         public Record(string compTypeFullName)
         {
             this.compTypeFullName = compTypeFullName;
+            isExpanded = true;
         }
 
         public void SetExpanded(bool expanded)

@@ -1,12 +1,11 @@
+using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
 namespace Henry.EditorKit.BuiltInComponent
 {
-    using Henry.EditorKit.Component;
-    
-    class FpsSwitchTool : ScriptableObject, IComponent
+    class AppFpsSwitcher : ScriptableObject, IComponent
     {
         record Option(string Title, int Value);
 
@@ -33,12 +32,6 @@ namespace Henry.EditorKit.BuiltInComponent
             new ( "240", 240 ),
         };
         string[] optionsTitle;
-
-        public static Config Info => new("Fps Switcher")
-        {
-            Author = "林祐豪",
-            Version = "1.0.0",
-        };
 
         void IComponent.OnEnable()
         {
@@ -113,7 +106,7 @@ namespace Henry.EditorKit.BuiltInComponent
 
         void SetFps(int value)
         {
-            value = value > 100_000 ? 100_000 : value;
+            value = Math.Min(value, 100_000);
 
             previousSetTimeScale = latestSetFps;
             Application.targetFrameRate = latestSetFps = value;

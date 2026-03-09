@@ -5,8 +5,6 @@ using UnityEngine;
 
 namespace Henry.EditorKit.BuiltInComponent
 {
-    using Henry.EditorKit.Component;
-
     class CodeEditorTool : ScriptableObject, IComponent
     {
         readonly string selectorHeaderText = "Select";
@@ -22,12 +20,6 @@ namespace Henry.EditorKit.BuiltInComponent
         string[] editorOptionsName;
 
         int selectedOptionIdx;
-
-        public static Config Info => new("CodeEditor Tool")
-        {
-            Author = "林祐豪",
-            Version = "1.0.1"
-        };
 
         void IComponent.OnEnable()
         {

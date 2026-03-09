@@ -32,6 +32,9 @@ namespace Henry.EditorKit
         [SerializeField] RecordStore compRecordStore;
         [SerializeField] InstanceStore compStore;
 
+        // >Todo 改為可變更新率
+        readonly float RepaintInterval = 0.166f;
+
         bool isInitialized = false;
         int activePanelIdx = 0;
         PanelData[] panelDataArr;
@@ -110,6 +113,7 @@ namespace Henry.EditorKit
             // 擷取[崁入式]的元件給[PinnedPanel]
             FilterPinnedComponentForPinnedPanel();
 
+            // event 每次 compile 後都會被洗掉，所以一律重新註冊
             RegisterPinnedPanelEvents();
             RegisterSearchPanelEvents();
 
@@ -122,6 +126,7 @@ namespace Henry.EditorKit
         void OnDisable()
         {
             EditorApplication.update -= RepaintOnUpdate;
+
             foreach (var item in panelDataArr)
             {
                 item.Panel.OnDisable();
@@ -131,14 +136,22 @@ namespace Henry.EditorKit
             {
                 compRecordStore.SetRecords(compStore.Components.Select(el => el.Record));
                 compRecordStore.SaveRecord();
-                DestroyImmediate(compRecordStore);
             }
         }
 
+        void OnDestroy()
+        {
+            if (compRecordStore != null)
+            {
+                DestroyImmediate(compRecordStore);
+                compRecordStore = null;
+            }
+        }
 
         void RepaintOnUpdate()
         {
-            if (EditorApplication.timeSinceStartup - lastTime > 0.1f)
+            var isPassInterval = EditorApplication.timeSinceStartup - lastTime > RepaintInterval;
+            if (isPassInterval)
             {
                 lastTime = EditorApplication.timeSinceStartup;
                 Repaint();
@@ -147,10 +160,7 @@ namespace Henry.EditorKit
 
         void OnGUI()
         {
-            if (StyleSheet.Instance.IsSetup == false)
-            {
-                StyleSheet.Instance.Setup();
-            }
+            EnsureStyleAvailability();
 
             using (new EditorGUILayout.VerticalScope())
             {
@@ -163,6 +173,14 @@ namespace Henry.EditorKit
             }
         }
 
+        void EnsureStyleAvailability()
+        {
+            if (StyleSheet.Instance.IsSetup == false)
+            {
+                StyleSheet.Instance.Setup();
+            }
+        }
+
         void PinPresetComps()
         {
             var infoDict = ComponentRegistry.InfoDict;
@@ -170,8 +188,8 @@ namespace Henry.EditorKit
             var infos = new Info[]
             {
                     infoDict[typeof(CodeEditorTool).FullName],
-                    infoDict[typeof(SpritePackerSwitchTool).FullName],
-                    infoDict[typeof(TimeScaleSwitchTool).FullName],
+                    infoDict[typeof(SpritePackerSwitcher).FullName],
+                    infoDict[typeof(TimeScaleSwitcher).FullName],
             };
 
             var comps = InstanceStore.InstanceFromInfo(infos);
@@ -187,9 +205,9 @@ namespace Henry.EditorKit
 
         void RegisterPinnedPanelEvents()
         {
-            pinnedPanel.OnRequestUnpinComp += OnRequestUnpinComp;
-            pinnedPanel.OnRequestPopupComp += OnRequestPopupComp;
-            pinnedPanel.OnRequestUnpinAllComp += OnRequestUnpinAllComp;
+            pinnedPanel.RequestUnpinCompNofity += OnRequestUnpinComp;
+            pinnedPanel.RequestPopupCompNofity += OnRequestPopupComp;
+            pinnedPanel.RequestUnpinAllCompNofity += OnRequestUnpinAllComp;
 
             void OnRequestUnpinComp(Data data)
             {

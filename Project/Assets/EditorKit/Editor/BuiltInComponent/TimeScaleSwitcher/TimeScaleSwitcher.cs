@@ -4,9 +4,7 @@ using UnityEngine;
 
 namespace Henry.EditorKit.BuiltInComponent
 {
-    using Henry.EditorKit.Component;
-
-    class TimeScaleSwitchTool : ScriptableObject, IComponent
+    class TimeScaleSwitcher : ScriptableObject, IComponent
     {
         record Option(string Title, float Value);
 
@@ -37,12 +35,6 @@ namespace Henry.EditorKit.BuiltInComponent
             new ("10", 10f ),
         };
         string[] optionsTitle;
-
-        public static Config Info => new("TimeScale Switcher")
-        {
-            Author = "林祐豪",
-            Version = "1.0.0"
-        };
 
         void IComponent.OnEnable()
         {

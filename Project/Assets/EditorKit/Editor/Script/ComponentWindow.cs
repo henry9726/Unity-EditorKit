@@ -5,80 +5,59 @@ namespace Henry.EditorKit
 {
     using Henry.EditorKit.Component;
 
-    sealed internal class ComponentWindow : EditorWindow
+    sealed internal class ComponentWindow : EditorWindow, IHasCustomMenu
     {
         public static ComponentWindow Create(Data data)
         {
             ComponentWindow[] windows = Resources.FindObjectsOfTypeAll<ComponentWindow>();
-            ComponentWindow window = System.Array.Find(windows, (w) => w);
+            ComponentWindow tempLatestWindow = windows.Length > 0 ? windows[0] : null;
 
-            Rect? windowTargetPosition = null;
-            if (window)
-            {
-                Rect position = window.position;
-                position.position += new Vector2(25f, 25f);
-                windowTargetPosition = position;
-            }
-
-            var compName = data.Info.Config.Name;
-            window = CreateInstance<ComponentWindow>();
+            ComponentWindow window = CreateInstance<ComponentWindow>();
+            string compName = data.Info.Config.Name;
             window.titleContent = new GUIContent(compName);
-
-            if (windowTargetPosition.HasValue)
-            {
-                window.shouldRepositionSelf = true;
-                window.windowTargetPosition = windowTargetPosition.Value;
-            }
-
             window.Setup(data);
             window.Show(true);
             window.Focus();
 
+            if (tempLatestWindow != null)
+            {
+                var rect = tempLatestWindow.position;
+                rect.position += new Vector2(20f, 20f);
+                window.position = rect;
+            }
+
             return window;
         }
 
-        [SerializeField] ScriptableObject componentSO;
         [SerializeField] string componentTypeFullName;
-        [SerializeField] string contentStash;
+        [SerializeField] string persistentContent;
+        [SerializeField] bool useUpdateLoop = false;
+        [SerializeField] Data compData;
 
         IComponent component;
-
-        bool shouldRepositionSelf;
-        Rect windowTargetPosition;
-
-        bool isSetup = false;
+        bool isNeedReSetup = false;
         Vector2 scrollPosition = Vector2.zero;
 
-        public void Setup(Data data)
+        public void Setup(Data compData)
         {
-            componentSO = data.TargetSO;
-            componentTypeFullName = data.Info.TypeFullName;
-            contentStash = string.Empty;
-            component = data.Component;
-
-            isSetup = true;
+            this.compData = compData;
+            componentTypeFullName = compData.Info.TypeFullName;
+            persistentContent = string.Empty;
+            component = compData.Component;
         }
 
-        void SetupFromLifeCycle()
+        bool TryReCreateComponent()
         {
             if (string.IsNullOrEmpty(componentTypeFullName))
             {
-                Close();
-                return;
+                return false;
             }
 
-            if (componentSO == null)
-            {
-                var componentInstance = InstanceStore.CreateComponent(componentTypeFullName);
-                componentSO = componentInstance;
-            }
-
-            component = componentSO as IComponent;
+            component = compData.Component;
 
             if (component == null)
             {
-                Close();
-                return;
+                return false;
             }
             else
             {
@@ -86,32 +65,35 @@ namespace Henry.EditorKit
                 component.OnEnable();
             }
 
-            isSetup = true;
+            isNeedReSetup = false;
+            return true;
         }
 
         void OnDisable()
         {
-            isSetup = false;
+            isNeedReSetup = true;
         }
 
         void OnDestroy()
         {
+            compData.Dispose();
+            compData = null;
         }
 
         void Update()
         {
-            if (shouldRepositionSelf)
+            if (useUpdateLoop)
             {
-                shouldRepositionSelf = false;
-                position = windowTargetPosition;
+                Repaint();
             }
         }
 
         void OnGUI()
         {
-            if (isSetup is false)
+            if (isNeedReSetup && TryReCreateComponent() is false)
             {
-                SetupFromLifeCycle();
+                Close();
+                return;
             }
 
             using (var view = new EditorGUILayout.ScrollViewScope(scrollPosition, false, false))
@@ -119,6 +101,18 @@ namespace Henry.EditorKit
                 scrollPosition = view.scrollPosition;
                 component.OnGUI(position);
             }
+        }
+
+        void IHasCustomMenu.AddItemsToMenu(GenericMenu menu)
+        {
+            menu.AddItem(new GUIContent("Refresh Mode/Event Based (Standard)"), !useUpdateLoop, () =>
+            {
+                useUpdateLoop = false;
+            });
+            menu.AddItem(new GUIContent("Refresh Mode/Continuous (Update Loop)"), useUpdateLoop, () =>
+            {
+                useUpdateLoop = true;
+            });
         }
     }
 }

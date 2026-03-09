@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -24,9 +23,9 @@ namespace Henry.EditorKit
 
         Action requestLoadPresetComps;
 
-        public event Action<Data> OnRequestUnpinComp;
-        public event Action<Data> OnRequestPopupComp;
-        public event Action OnRequestUnpinAllComp;
+        public event Action<Data> RequestUnpinCompNofity;
+        public event Action<Data> RequestPopupCompNofity;
+        public event Action RequestUnpinAllCompNofity;
 
         public void Setup(Action requestLoadPresetComps)
         {
@@ -71,32 +70,33 @@ namespace Henry.EditorKit
                 else
                 {
                     DrawComponentCard(rect);
+                    GUILayout.FlexibleSpace();
                 }
             }
+        }
 
-            void ValidateStyles()
+        void ValidateStyles()
+        {
+            if (style == null)
             {
-                if (style == null)
-                {
-                    style = StyleSheet.Instance;
-                }
-                if (dotMenuBtnStyle == null)
-                {
-                    dotMenuBtnStyle = new("SearchModeFilter") { stretchWidth = false };
-                    dotMenuBtnStyle.fixedHeight = 20;
-                    dotMenuBtnStyle.margin = new(0, 0, 2, 0);
-                    dotMenuBtnStyle.padding = new(3, 3, 0, 0);
-                }
-                if (cornerBtnGuiContent == null)
-                {
-                    cornerBtnGuiContent = EditorGUIUtility.IconContent("_Menu");
-                }
+                style = StyleSheet.Instance;
+            }
+            if (dotMenuBtnStyle == null)
+            {
+                dotMenuBtnStyle = new("SearchModeFilter") { stretchWidth = false };
+                dotMenuBtnStyle.fixedHeight = 20;
+                dotMenuBtnStyle.margin = new(0, 0, 2, 0);
+                dotMenuBtnStyle.padding = new(3, 3, 0, 0);
+            }
+            if (cornerBtnGuiContent == null)
+            {
+                cornerBtnGuiContent = EditorGUIUtility.IconContent("_Menu");
             }
         }
 
         void UnpinAll()
         {
-            OnRequestUnpinAllComp?.Invoke();
+            RequestUnpinAllCompNofity?.Invoke();
         }
 
         void DrawEmptyCompHint()
@@ -113,60 +113,40 @@ namespace Henry.EditorKit
 
         void DrawComponentCard(Rect rect)
         {
-            var compsCache = comps;
-
             // 扣除元件容器的 Padding
             rect.width -= 8;
 
+            var compsCache = comps;
             for (int i = 0; i < compsCache.Count; i++)
             {
                 var el = compsCache[i];
-                var elPerferSize = el.Component.GetPreferMinSize();
-                var minHeightOption = elPerferSize.y > 0 ? GUILayout.MinHeight(elPerferSize.y) : emptyMinHeight;
-                using (new EditorGUILayout.VerticalScope(style.Block, minHeightOption))
+                using (new EditorGUILayout.VerticalScope(style.Block))
                 {
-                    var isExpanded = comps[i].Record.isExpanded;
+                    var compRecord = comps[i].Record;
+                    var isExpanded = DrawCustomFoldoutHeader(el, compRecord.isExpanded);
 
-                    DrawCustomFoldoutHeader(el, ref isExpanded);
-
-                    if (isExpanded is false)
+                    if (isExpanded)
                     {
                         try
                         {
                             el.Component.OnGUI(rect);
                         }
-                        catch (System.Exception e)
+                        catch (Exception e)
                         {
                             Debug.LogError($"Component {el.Info.Config.Name} failed to draw: {e.Message}");
                             isExpanded = false;
                         }
                     }
 
-                    comps[i].Record.SetExpanded(isExpanded);
+                    compRecord.SetExpanded(isExpanded);
                 }
             }
         }
 
-        /// <summary>
-        /// 繪製自訂的摺疊標題
-        /// </summary>
-        /// <param name="title">標題文字</param>
-        /// <param name="isExpanded">控制摺疊狀態的 ref 變數</param>
-        private void DrawCustomFoldoutHeader(Data data, ref bool isExpanded)
+        bool DrawCustomFoldoutHeader(Data data, bool isExpanded)
         {
-            ColorUtility.TryParseHtmlString("#989898", out Color h1DisableTextColor);
-
-            GUIStyle headerStyle = new GUIStyle(style.H1);
-            headerStyle.alignment = TextAnchor.MiddleLeft;
-            headerStyle.normal.textColor = isExpanded ? h1DisableTextColor : style.H1.normal.textColor;
-
-            var hoverStyle = new GUIStyleState();
-            hoverStyle.textColor = isExpanded ? h1DisableTextColor : style.H1.normal.textColor;
-
-            headerStyle.hover = hoverStyle;
-            headerStyle.active = hoverStyle;
-
-            string arrowDirectionSymbol = isExpanded ? "▸" : "▾";
+            GUIStyle headerStyle = isExpanded ? style.ExpandedFoldoutHeaderStyle : style.CollapsedFoldoutHeaderStyle;
+            string arrowDirectionSymbol = isExpanded ? "▾" : "▸";
             string displayText = $"{arrowDirectionSymbol} {data.Info.Config.Name}";
 
             using (new EditorGUILayout.HorizontalScope())
@@ -178,27 +158,14 @@ namespace Henry.EditorKit
 
                 if (GUILayout.Button(cornerBtnGuiContent, dotMenuBtnStyle))
                 {
-                    ShowContextMenu(data);
+                    ShowComponentMenu(data);
                 }
             }
+
+            return isExpanded;
         }
 
-        void DrawCompHeader(Data data)
-        {
-            GUILayout.Space(2);
-            using (new EditorGUILayout.HorizontalScope())
-            {
-                EditorGUILayout.LabelField(data.Info.Config.Name, style.H1, style.Title_H1);
-
-                if (GUILayout.Button(cornerBtnGuiContent, dotMenuBtnStyle))
-                {
-                    ShowContextMenu(data);
-                }
-            }
-            GUILayout.Space(4);
-        }
-
-        void ShowContextMenu(Data data)
+        void ShowComponentMenu(Data data)
         {
             GenericMenu menu = new();
             menu.AddItem(new GUIContent("Unpin"), false, () => UnpinHandler(data));
@@ -207,12 +174,12 @@ namespace Henry.EditorKit
 
             void UnpinHandler(Data data)
             {
-                OnRequestUnpinComp?.Invoke(data);
+                RequestUnpinCompNofity?.Invoke(data);
             }
 
             void PopupHandler(Data data)
             {
-                OnRequestPopupComp?.Invoke(data);
+                RequestPopupCompNofity?.Invoke(data);
             }
         }
     }

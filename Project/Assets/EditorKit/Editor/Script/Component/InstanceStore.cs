@@ -9,36 +9,34 @@ namespace Henry.EditorKit
     [Serializable]
     public class InstanceStore
     {
-        [SerializeField] List<Data> components = new();
+        [SerializeField] List<Data> compDataList = new();
 
-        public List<Data> Components => components;
+        public List<Data> Components => compDataList;
 
         public void SetData(List<Data> data)
         {
-            components.Clear();
-            components.AddRange(data);
+            compDataList.Clear();
+            compDataList.AddRange(data);
         }
 
         public void RemoveData(Data data)
         {
-            components.Remove(data);
+            compDataList.Remove(data);
         }
 
         public void RemoveAllData()
         {
-            foreach (var item in components)
+            foreach (var data in compDataList)
             {
-                var comp = item.Component;
-                comp.OnDisable();
-                
-                UnityEngine.Object.DestroyImmediate(item.TargetSO);
+                data.Component.OnDisable();
+                data.Dispose();
             }
-            components.Clear();
+            compDataList.Clear();
         }
 
         public void AddData(Data data)
         {
-            components.Add(data);
+            compDataList.Add(data);
         }
 
         public static List<Data> InstanceFromRecord(IReadOnlyList<Record> records, IReadOnlyDictionary<string, Info> infoDict)
@@ -117,7 +115,7 @@ namespace Henry.EditorKit
 
             var instance = ScriptableObject.CreateInstance(type);
             instance.hideFlags = HideFlags.DontSaveInEditor;
-            
+
             return instance;
         }
     }

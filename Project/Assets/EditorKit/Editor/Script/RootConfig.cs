@@ -26,5 +26,7 @@ namespace Henry.EditorKit
 
         public const string UserSettingsDirectory = "UserSettings";
         public const string EditorKitDirectory = "EditorKit";
+
+        public const string RecordSystemVersion = "1.0.0";
     }
 }

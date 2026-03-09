@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b285abf83564ba4b82a1c0655e88093, type: 3}
+  m_Name: CodeEditorToolManifest
+  m_EditorClassIdentifier: 
+  script: {fileID: 11500000, guid: f692b884363c2fc429790f6b6347e5ce, type: 3}
+  config:
+    <Name>k__BackingField: CodeEditor Tool
+    <Description>k__BackingField: "\u4EE3\u78BC\u7DE8\u8F2F\u5668\u5207\u63DB\u5668"
+    <Author>k__BackingField: "\u6797\u7950\u8C6A"
+    <Version>k__BackingField: 1.0.1
+    <ReadmePath>k__BackingField: 

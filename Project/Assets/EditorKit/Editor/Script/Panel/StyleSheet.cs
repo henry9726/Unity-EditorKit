@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.UIElements;
 
 namespace Henry.EditorKit
 {
@@ -19,6 +20,12 @@ namespace Henry.EditorKit
         public GUILayoutOption Button_xl { get; private set; }
         public GUILayoutOption Button_min_md { get; private set; }
 
+        public GUIStyle ExpandedFoldoutHeaderStyle { get; private set; }
+        public GUIStyle CollapsedFoldoutHeaderStyle { get; private set; }
+
+        Color H1TextColor { get; set; }
+        Color DisabledTextColor { get; set; }
+
         StyleSheet() { }
 
         public void Setup()
@@ -26,6 +33,7 @@ namespace Henry.EditorKit
             if (IsSetup) return;
 
             ColorUtility.TryParseHtmlString("#a5bfde", out Color h1TextColor);
+            H1TextColor = h1TextColor;
             H1 = new(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Bold, alignment = TextAnchor.UpperLeft };
             H1.normal.textColor = h1TextColor;
 
@@ -37,7 +45,43 @@ namespace Henry.EditorKit
             Button_lg = GUILayout.Width(200);
             Button_xl = GUILayout.Width(300);
             Button_min_md = GUILayout.MinWidth(100);
+
+            ExpandedFoldoutHeaderStyle = CreateFoldoutStyle(H1, H1TextColor);
+
+            ColorUtility.TryParseHtmlString("#989898", out Color disabledTextColor);
+            DisabledTextColor = disabledTextColor;
+            CollapsedFoldoutHeaderStyle = CreateFoldoutStyle(H1, DisabledTextColor);
+
             IsSetup = true;
+        }
+
+        GUIStyle CreateFoldoutStyle(GUIStyle textStyle, Color textColor)
+        {
+            var stateStyle = new GUIStyleState() { textColor = textColor };
+            var style = new GUIStyle(textStyle)
+            {
+                normal = stateStyle,
+                hover = stateStyle,
+                active = stateStyle
+            };
+            return style;
+        }
+
+        public void ApplyExpandedFoldoutHeaderStyle(VisualElement element)
+        {
+            ApplyBaseFoldoutStyle(element, H1TextColor);
+        }
+
+        public void ApplyCollapsedFoldoutHeaderStyle(VisualElement element)
+        {
+            ApplyBaseFoldoutStyle(element, DisabledTextColor);
+        }
+
+        void ApplyBaseFoldoutStyle(VisualElement element, Color color)
+        {
+            element.style.fontSize = 15;
+            element.style.unityFontStyleAndWeight = FontStyle.Bold;
+            element.style.color = color;
         }
     }
 }

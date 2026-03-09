@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b285abf83564ba4b82a1c0655e88093, type: 3}
+  m_Name: SpritePackerSwitcherManifest
+  m_EditorClassIdentifier: 
+  script: {fileID: 11500000, guid: 4888ef47935577d4eb3773a7f5eae23b, type: 3}
+  config:
+    <Name>k__BackingField: SpritePackerSwitcher
+    <Description>k__BackingField: "\u5716\u96C6\u6A21\u5F0F\u5207\u63DB\u5668"
+    <Author>k__BackingField: "\u6797\u7950\u8C6A\u3001\u674E\u80B2\u6770"
+    <Version>k__BackingField: 1.0.1
+    <ReadmePath>k__BackingField: 

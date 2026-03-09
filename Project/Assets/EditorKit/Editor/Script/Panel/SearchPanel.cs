@@ -14,6 +14,7 @@ namespace Henry.EditorKit
         readonly string searchBarHeaderText = "Search : ";
 
         IReadOnlyList<Info> componentInfoList;
+        bool[] isExpandedList;
         ISearcher searcher;
         StyleSheet style;
 
@@ -30,7 +31,7 @@ namespace Henry.EditorKit
         GUILayoutOption searchBarHeaderWidth;
 
         [SerializeField] string searchingString = "";
-        IEnumerable<Info> searchResult = Array.Empty<Info>();
+        IReadOnlyList<Info> searchResult = new List<Info>();
         Vector2 scrollPosition = Vector2.zero;
 
         public event Action<Info> OnRequestPinComp;
@@ -38,13 +39,18 @@ namespace Henry.EditorKit
 
         public SearchPanel()
         {
-            componentInfoList = ComponentRegistry.List;
-            searcher = SearcherManager.GetSearcher();
-            searchResult = componentInfoList;
         }
 
         void ISubPanel.OnEnable()
         {
+            if (componentInfoList == null)
+            {
+                componentInfoList = ComponentRegistry.List;
+                searchResult = componentInfoList;
+                isExpandedList = new bool[componentInfoList.Count];
+            }
+
+            searcher = SearcherManager.GetSearcher();
             style = StyleSheet.Instance;
 
             infoIcon = EditorGUIUtility.Load(RootConfig.AssetsPath + "/Editor/Icons/info_16dp.png") as Texture2D;
@@ -54,9 +60,6 @@ namespace Henry.EditorKit
             infoIconContent = new GUIContent(infoIcon, "Open help");
             openIconContent = new GUIContent(openIcon, "Open in new window");
             keepIconContent = new GUIContent(keepIcon, "Pin it");
-
-            componentInfoList = ComponentRegistry.List;
-            searcher = SearcherManager.GetSearcher();
         }
 
         void ISubPanel.OnGUI(Rect rect)
@@ -67,9 +70,9 @@ namespace Henry.EditorKit
             using (var view = new EditorGUILayout.ScrollViewScope(scrollPosition, false, false))
             {
                 scrollPosition = view.scrollPosition;
-                foreach (var el in searchResult)
+                for (int i = 0; i < searchResult.Count; i++)
                 {
-                    DrawComponentCard(el);
+                    DrawComponentCard(searchResult[i], i);
                 }
             }
         }
@@ -111,23 +114,32 @@ namespace Henry.EditorKit
             }
         }
 
-        void DrawComponentCard(Info info)
+        void DrawComponentCard(Info info, int index)
         {
             var config = info.Config;
+
             using (new EditorGUILayout.VerticalScope(style.Block))
             {
-                EditorGUILayout.LabelField(config.Name, style.H1, style.Title_H1);
+                var headerText = config.Name;
+                var isExpanded = isExpandedList[index];
+                var headerStyle = style.ExpandedFoldoutHeaderStyle;
+                isExpanded = DrawCustomFoldoutHeader(headerText, isExpanded, headerStyle);
 
                 if (!string.IsNullOrEmpty(config.Description))
                 {
                     EditorGUILayout.LabelField(config.Description, EditorStyles.wordWrappedLabel);
                 }
 
-                Color originalColor = GUI.contentColor;
-                GUI.contentColor = gray75;
-                EditorGUILayout.LabelField($"Author  : {config.Author}", GUILayout.ExpandWidth(false));
-                EditorGUILayout.LabelField($"Version : {config.Version}", GUILayout.ExpandWidth(false));
-                GUI.contentColor = originalColor;
+                if (isExpanded)
+                {
+
+                    Color originalColor = GUI.contentColor;
+                    GUI.contentColor = gray75;
+                    EditorGUILayout.LabelField($"Author  : {config.Author}", GUILayout.ExpandWidth(false));
+                    EditorGUILayout.LabelField($"Version : {config.Version}", GUILayout.ExpandWidth(false));
+                    GUI.contentColor = originalColor;
+                }
+                isExpandedList[index] = isExpanded;
 
                 using (new EditorGUILayout.HorizontalScope())
                 {
@@ -151,6 +163,22 @@ namespace Henry.EditorKit
                     }
                 }
             }
+        }
+
+        bool DrawCustomFoldoutHeader(string text, bool isExpanded, GUIStyle style)
+        {
+            string arrowDirectionSymbol = isExpanded ? "▾" : "▸";
+            string displayText = $"{arrowDirectionSymbol} {text}";
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button(displayText, style, GUILayout.ExpandWidth(true)))
+                {
+                    isExpanded = !isExpanded;
+                }
+            }
+
+            return isExpanded;
         }
     }
 }

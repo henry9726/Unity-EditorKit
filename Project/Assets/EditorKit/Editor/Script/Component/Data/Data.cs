@@ -4,12 +4,14 @@ using UnityEngine;
 namespace Henry.EditorKit.Component
 {
     [Serializable]
-    public class Data
+    public class Data : IDisposable
     {
         [SerializeField] ScriptableObject target;
         [SerializeField] Info info;
         [SerializeField] Record record;
         [SerializeField] string guid;
+
+        bool isDisposed;
 
         IComponent component;
 
@@ -24,8 +26,6 @@ namespace Henry.EditorKit.Component
                 return component;
             }
         }
-
-        public ScriptableObject TargetSO => target;
 
         public Info Info => info;
 
@@ -44,6 +44,22 @@ namespace Henry.EditorKit.Component
         public void SetInfo(Info info)
         {
             this.info = info;
+        }
+
+        public void Dispose()
+        {
+            if (isDisposed) return;
+
+            if (target != null)
+            {
+                UnityEngine.Object.DestroyImmediate(target);
+            }
+
+            target = null;
+            info = null;
+            record = null;
+            component = null;
+            isDisposed = true;
         }
     }
 }

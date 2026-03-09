@@ -5,8 +5,6 @@ using UnityEngine;
 
 namespace Henry.EditorKit.BuiltInComponent
 {
-    using Henry.EditorKit.Component;
-    
     class ScreenShotTool : ScriptableObject, IComponent
     {
         StyleSheet style;
@@ -15,12 +13,6 @@ namespace Henry.EditorKit.BuiltInComponent
         GUILayoutOption headerTextWidth;
         [SerializeField] Camera mainCamera;
         [SerializeField] string path;
-
-        public static Config Info => new("GameView ScreenShot Tool")
-        {
-            Author = "李家駿, 李育杰",
-            Version = "1.0.0"
-        };
 
         void IComponent.OnEnable()
         {
@@ -128,7 +120,7 @@ namespace Henry.EditorKit.BuiltInComponent
             RenderTexture.active = null;
 
             rt.Release();
-            UnityEngine.Object.DestroyImmediate(rt); // 在 Editor 模式下用 DestroyImmediate
+            UnityEngine.Object.DestroyImmediate(rt);
             var image = screenshot;
             return image;
         }

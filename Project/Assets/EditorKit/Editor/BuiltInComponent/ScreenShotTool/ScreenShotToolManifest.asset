@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b285abf83564ba4b82a1c0655e88093, type: 3}
+  m_Name: ScreenShotToolManifest
+  m_EditorClassIdentifier: 
+  script: {fileID: 11500000, guid: b97894eb5c03e5e4f868364116406774, type: 3}
+  config:
+    <Name>k__BackingField: ScreenShotTool
+    <Description>k__BackingField: "Game\u8996\u7A97\u622A\u5716\u5DE5\u5177"
+    <Author>k__BackingField: "\u674E\u5BB6\u99FF, \u674E\u80B2\u6770"
+    <Version>k__BackingField: 1.0.1
+    <ReadmePath>k__BackingField: 

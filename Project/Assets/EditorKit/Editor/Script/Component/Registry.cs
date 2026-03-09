@@ -1,5 +1,3 @@
-using System;
-using System.Reflection;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -9,100 +7,64 @@ namespace Henry.EditorKit
     using Henry.EditorKit.Component;
     using CompInfo = Component.Info;
 
-    [InitializeOnLoad]
     sealed internal class ComponentRegistry
     {
-        class MsgTemplate
-        {
-            public const string CantFindInfoProperty
-            = "EditorKit component registration failed on <color=#1ed760>{0}</color>: The Info property is not correctly implemented.\n<color=#ffc107>You can see the example in the <color=#1ed760>{1}</color>.</color>";
-        }
-
         readonly static List<CompInfo> list = new();
         readonly static Dictionary<string, CompInfo> infoDict = new();
 
-        public static IReadOnlyList<CompInfo> List => list;
-        public static IReadOnlyDictionary<string, CompInfo> InfoDict => infoDict;
-
-        static ComponentRegistry()
+        public static IReadOnlyList<CompInfo> List
         {
-            ScanComponentSource();
+            get
+            {
+                if (list.Count == 0)
+                {
+                    ScanComponentSource();
+                }
+                return list;
+            }
         }
 
-        static bool TryAddConfig(Type type, object configSource)
+        public static IReadOnlyDictionary<string, CompInfo> InfoDict
         {
-            var config = configSource as Config;
-
-            if (config != null)
+            get
             {
-                list.Add(new(type, config));
-                infoDict.Add(type.FullName, new(type, config));
-                return true;
+                if (infoDict.Count == 0)
+                {
+                    ScanComponentSource();
+                }
+                return infoDict;
             }
-
-            return false;
         }
 
         static void ScanComponentSource()
         {
             list.Clear();
+            infoDict.Clear();
 
-            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            string[] guids = AssetDatabase.FindAssets("t:ComponentManifest");
+
+            foreach (var guid in guids)
             {
-                if (IsSystemAssembly(assembly))
-                {
-                    continue;
-                }
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var manifest = AssetDatabase.LoadAssetAtPath<ComponentManifest>(path);
 
-                try
-                {
-                    foreach (Type type in assembly.GetTypes())
-                    {
-                        if (
-                            typeof(IComponent).IsAssignableFrom(type) &&
-                            !type.IsInterface &&
-                            !type.IsAbstract &&
-                            !type.IsGenericTypeDefinition)
-                        {
-                            if (typeof(ScriptableObject).IsAssignableFrom(type) is false)
-                            {
-                                Debug.LogError($"EditorKit component registration failed on {type.FullName}\nComponent must inherit from ScriptableObject.");
-                                continue;
-                            }
+                if (manifest == null) continue;
 
-                            PropertyInfo infoProperty = type.GetProperty("Info", BindingFlags.Public | BindingFlags.Static);
-                            if (infoProperty != null && infoProperty.PropertyType == typeof(Config))
-                            {
-                                TryAddConfig(type, infoProperty.GetValue(null));
-                            }
-                            else Debug.LogError(string.Format(MsgTemplate.CantFindInfoProperty, type.FullName, typeof(IComponent).FullName));
-                        }
-                    }
-                }
-                catch (ReflectionTypeLoadException ex)
+                var info = new CompInfo(manifest);
+
+                if (info.ComponentType != null)
                 {
-                    Debug.LogWarning($"ComponentRegistry: Failed to load types from assembly '{assembly.FullName}'. Error: {ex.Message}");
-                    foreach (Exception loaderEx in ex.LoaderExceptions)
+                    list.Add(info);
+                    if (!infoDict.ContainsKey(info.TypeFullName))
                     {
-                        Debug.LogWarning($"Loader exception: {loaderEx.Message}");
+                        infoDict.Add(info.TypeFullName, info);
                     }
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"ComponentRegistry: Failed to scan assembly '{assembly.FullName}'. Error: {ex.Message}");
+                    else
+                    {
+                        Debug.LogWarning($"Duplicate ComponentManifest found for type: {info.TypeFullName}. Ignoring asset at {path}");
+                    }
                 }
             }
-
-            // Debug.Log($"ComponentRegistry: Scan completed. Found {infos.Count} components implementing IComponent.");
-        }
-
-        static bool IsSystemAssembly(Assembly assembly)
-        {
-            return assembly.FullName.StartsWith("Unity") ||
-                   assembly.FullName.StartsWith("System") ||
-                   assembly.FullName.StartsWith("mscorlib") ||
-                   assembly.FullName.StartsWith("Mono") ||
-                   assembly.FullName.Contains("Newtonsoft.Json");
         }
     }
 }
