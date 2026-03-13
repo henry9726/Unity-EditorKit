@@ -205,9 +205,9 @@ namespace Henry.EditorKit
 
         void RegisterPinnedPanelEvents()
         {
-            pinnedPanel.RequestUnpinCompNofity += OnRequestUnpinComp;
-            pinnedPanel.RequestPopupCompNofity += OnRequestPopupComp;
-            pinnedPanel.RequestUnpinAllCompNofity += OnRequestUnpinAllComp;
+            pinnedPanel.RequestUnpinCompNotify += OnRequestUnpinComp;
+            pinnedPanel.RequestPopupCompNotify += OnRequestPopupComp;
+            pinnedPanel.RequestUnpinAllCompNotify += OnRequestUnpinAllComp;
 
             void OnRequestUnpinComp(Data data)
             {
@@ -218,9 +218,6 @@ namespace Henry.EditorKit
             void OnRequestPopupComp(Data data)
             {
                 compStore.RemoveData(data);
-
-                compStore.AddData(data);
-
                 ComponentWindow.Create(data);
                 FilterPinnedComponentForPinnedPanel();
             }

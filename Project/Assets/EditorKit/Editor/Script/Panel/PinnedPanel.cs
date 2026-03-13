@@ -23,9 +23,9 @@ namespace Henry.EditorKit
 
         Action requestLoadPresetComps;
 
-        public event Action<Data> RequestUnpinCompNofity;
-        public event Action<Data> RequestPopupCompNofity;
-        public event Action RequestUnpinAllCompNofity;
+        public event Action<Data> RequestUnpinCompNotify;
+        public event Action<Data> RequestPopupCompNotify;
+        public event Action RequestUnpinAllCompNotify;
 
         public void Setup(Action requestLoadPresetComps)
         {
@@ -96,7 +96,7 @@ namespace Henry.EditorKit
 
         void UnpinAll()
         {
-            RequestUnpinAllCompNofity?.Invoke();
+            RequestUnpinAllCompNotify?.Invoke();
         }
 
         void DrawEmptyCompHint()
@@ -174,12 +174,12 @@ namespace Henry.EditorKit
 
             void UnpinHandler(Data data)
             {
-                RequestUnpinCompNofity?.Invoke(data);
+                RequestUnpinCompNotify?.Invoke(data);
             }
 
             void PopupHandler(Data data)
             {
-                RequestPopupCompNofity?.Invoke(data);
+                RequestPopupCompNotify?.Invoke(data);
             }
         }
     }
