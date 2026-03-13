@@ -16,7 +16,7 @@ namespace Henry.EditorKit.Component
             config = new Config("");
         }
 
-        [MenuItem("Assets/Create/EditorKit/Create ComponentManifest", false, 0)]
+        [MenuItem("Assets/Create/EditorKit/Create Empty ComponentManifest", false, 0)]
         static void CreateComponentManifest()
         {
             var manifest = ScriptableObject.CreateInstance<ComponentManifest>();

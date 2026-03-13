@@ -16,17 +16,24 @@ namespace Henry.EditorKit
     {
         public const string RepositoryUrl = "https://github.com/henry9726/Unity-EditorKit";
 
-#if EDITORKIT_ENV_DEV
-        // 1️⃣ Project Path
-        public const string AssetsPath = "Assets/EditorKit";
-#else
-        // 2️⃣ Package Path
-        public const string AssetsPath = "Packages/com.henrylin.editorkit";
-#endif
+        static RootConfig()
+        {
+            var assembly = typeof(RootConfig).Assembly;
+            var packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssembly(assembly);
 
+            if (packageInfo != null)
+            {
+                AssetsPath = $"Packages/{packageInfo.name}";
+            }
+            else
+            {
+                AssetsPath = "Assets/EditorKit";
+            }
+        }
+
+        public static readonly string AssetsPath;
         public const string UserSettingsDirectory = "UserSettings";
         public const string EditorKitDirectory = "EditorKit";
-
-        public const string RecordSystemVersion = "1.0.0";
+        public const string ComponentRecordSystemVersion = "1.0.0";
     }
 }

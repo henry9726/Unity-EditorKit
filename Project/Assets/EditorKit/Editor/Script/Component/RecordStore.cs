@@ -5,7 +5,7 @@ namespace Henry.EditorKit
 {
     public class RecordStore : ScriptableObject
     {
-        const string RecordSystemVersion = RootConfig.RecordSystemVersion;
+        const string RecordSystemVersion = RootConfig.ComponentRecordSystemVersion;
 
         [SerializeField] string recordStoreVersion = RecordSystemVersion;
         [SerializeField] List<Record> records = new();
